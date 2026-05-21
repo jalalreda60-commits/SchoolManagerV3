@@ -1,0 +1,133 @@
+name: Build School Management App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller `
+            --name "LeSchema_SchoolERP" `
+            --onefile `
+            --windowed `
+            --icon "assets/school_logo.ico" `
+            --add-data "assets;assets" `
+            --add-data "database;database" `
+            --add-data "utils;utils" `
+            --hidden-import "sqlalchemy.dialects.sqlite" `
+            --hidden-import "PIL._tkinter_finder" `
+            --hidden-import "qrcode.image.pil" `
+            --hidden-import "reportlab.graphics.barcode.qr" `
+            --collect-all "reportlab" `
+            --collect-all "sqlalchemy" `
+            main.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LeSchema-School-ERP-Windows
+          path: dist/LeSchema_SchoolERP.exe
+          retention-days: 30
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk python3-pil python3-pil.imagetk
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller \
+            --name "LeSchema_SchoolERP" \
+            --onefile \
+            --windowed \
+            --add-data "assets:assets" \
+            --add-data "database:database" \
+            --add-data "utils:utils" \
+            --hidden-import "sqlalchemy.dialects.sqlite" \
+            --hidden-import "PIL._tkinter_finder" \
+            --hidden-import "qrcode.image.pil" \
+            --collect-all "reportlab" \
+            --collect-all "sqlalchemy" \
+            main.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LeSchema-School-ERP-Linux
+          path: dist/LeSchema_SchoolERP
+          retention-days: 30
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller \
+            --name "LeSchema_SchoolERP" \
+            --onefile \
+            --windowed \
+            --add-data "assets:assets" \
+            --add-data "database:database" \
+            --add-data "utils:utils" \
+            --hidden-import "sqlalchemy.dialects.sqlite" \
+            --hidden-import "PIL._tkinter_finder" \
+            --hidden-import "qrcode.image.pil" \
+            --collect-all "reportlab" \
+            --collect-all "sqlalchemy" \
+            main.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LeSchema-School-ERP-macOS
+          path: dist/LeSchema_SchoolERP
+          retention-days: 30
